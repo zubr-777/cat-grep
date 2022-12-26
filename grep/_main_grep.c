@@ -9,10 +9,10 @@ int main(int argc, char **argv) {
   int eflag = 0, iflag = 0, vflag = 0, cflag = 0, lflag = 0, nflag = 0;
   int opt;
 
-  const char *short_options = "eivcln";
+  const char *short_options = "e:ivcln";
 
   const struct option long_options[] = {
-      {NULL, no_argument, NULL, 'e'},
+      {NULL, required_argument, NULL, 'e'},
       {NULL, no_argument, NULL, 'i'},
       {NULL, no_argument, NULL, 'v'},
       {NULL, no_argument, NULL, 'c'},
