@@ -4,6 +4,13 @@
 #include <stdlib.h>
 #include <string.h>
 
+void tT_flag(unsigned char *buffer, unsigned char *buffer_Tab);
+void eE_flag (unsigned char *buffer);
+void v_flag (unsigned char *buffer);
+void b_flag(unsigned char *buffer, int *lineNumber);
+void n_flag(unsigned char *buffer, int *lineNumber);
+int  s_flag(unsigned char *buffer, int *lastLineBlank);
+
 int main(int argc, char **argv) {
 
   int bflag = 0, eflag = 0, nflag = 0, sflag = 0, tflag = 0, vflag = 0,
@@ -96,7 +103,43 @@ int main(int argc, char **argv) {
       buffer[length - 1] = '\0';
 
       if (tflag || Tflag) {
-        length = strlen(buffer);
+        tT_flag(buffer, buffer_Tab);
+      }
+
+      if (sflag) {
+        if (s_flag(buffer, &lastLineBlank)) {
+          continue;
+        }
+      }
+
+      if (bflag) {
+        b_flag(buffer, &lineNumber);
+      }
+
+      else if (nflag) {
+        n_flag(buffer, &lineNumber);
+      }
+
+      if (eflag || Eflag) {
+        eE_flag(buffer);
+      }
+
+      if (vflag || eflag || tflag) {
+        v_flag(buffer);
+      } else {
+        fprintf(stdout, "%s\n", buffer);
+      }
+    }
+
+    fclose(fp);
+    currentFile++;
+  }
+
+  return 0;
+}
+
+void tT_flag(unsigned char *buffer, unsigned char *buffer_Tab){
+        int length = strlen(buffer);
         int i = 0, shift = 0;
         for (i = 0; i < length; i++) {
           if ('\t' != buffer[i]) {
@@ -112,41 +155,15 @@ int main(int argc, char **argv) {
           buffer[i] = buffer_Tab[i];
         }
         buffer[i] = '\0';
-      }
+}
 
-      if (sflag) {
-        length = strlen(buffer);
-        int currentLineBlank = (length <= 1) ? 1 : 0;
-        if (lastLineBlank && currentLineBlank) {
-          continue;
-        }
-        lastLineBlank = currentLineBlank;
-      }
-
-      if (bflag) {
-        length = strlen(buffer);
-        if (length >= 1) {
-          char *tmp = strdup(buffer);
-          buffer[0] = '\0';
-          sprintf(buffer, "%*d\t", 6, lineNumber++);
-          strcat(buffer, tmp);
-        }
-      }
-
-      else if (nflag) {
-        char *tmp = strdup(buffer);
-        buffer[0] = '\0';
-        sprintf(buffer, "%*d\t", 6, lineNumber++);
-        strcat(buffer, tmp);
-      }
-
-      if (eflag || Eflag) {
-        length = strlen(buffer);
+void eE_flag (unsigned char *buffer) {
+        int length = strlen(buffer);
         buffer[length] = '$';
         buffer[length + 1] = '\0';
-      }
+}
 
-      if (vflag || eflag || tflag) {
+void v_flag (unsigned char *buffer) {
         unsigned char c;
         for (int i = 0; i < strlen(buffer); i++) {
           c = buffer[i];
@@ -177,14 +194,36 @@ int main(int argc, char **argv) {
           }
         }
         printf("\n");
-      } else {
-        fprintf(stdout, "%s\n", buffer);
-      }
-    }
+}
 
-    fclose(fp);
-    currentFile++;
-  }
+void b_flag(unsigned char *buffer, int *lineNumber) {
+        int buff = *lineNumber;
+        int length = strlen(buffer);
+        if (length >= 1) {
+          char *tmp = strdup(buffer);
+          buffer[0] = '\0';
+          sprintf(buffer, "%*d\t", 6, buff++);
+          strcat(buffer, tmp);
+          *lineNumber = buff;
+        }
+}
 
-  return 0;
+void n_flag(unsigned char *buffer, int *lineNumber) {
+        int buff = *lineNumber;
+        char *tmp = strdup(buffer);
+        buffer[0] = '\0';
+        sprintf(buffer, "%*d\t", 6, buff++);
+        strcat(buffer, tmp);
+        *lineNumber = buff;
+}
+
+int  s_flag(unsigned char *buffer, int *lastLineBlank) {
+        int flag_continue = 0;
+        int length = strlen(buffer);
+        int currentLineBlank = (length <= 1) ? 1 : 0;
+        if (*lastLineBlank && currentLineBlank) {
+          flag_continue = 1;
+        }
+        *lastLineBlank = currentLineBlank;
+        return flag_continue;
 }
